@@ -17,7 +17,6 @@ jobs:
                     - "ubuntu-24.04"
 
                 php-version:
-                    - "8.2"
                     - "8.3"
                     - "8.4"
                     - "8.5"
@@ -34,20 +33,20 @@ jobs:
                     php-version: ${{ matrix.php-version }}
                     coverage: none
 
-            # composer install cache - https://github.com/ramsey/composer-install
-            -   uses: ramsey/composer-install@v3
-                with:
-                    composer-options: "--prefer-dist --no-scripts"
-
             -
                 name: 'Composer Validate'
                 run: composer validate --ansi
+
+            -   # https://github.com/ramsey/composer-install
+                name: Install Composer dependencies
+                uses: ramsey/composer-install@v3
+                with:
+                    composer-options: "--prefer-dist --no-scripts"
 
             -
                 name: 'Run "measure" command'
                 run: |
                     bin/lines measure src --ansi
-                    bin/lines measure src --json --longest --ansi
 
             -
                 name: 'Run "features" command'
@@ -59,13 +58,13 @@ jobs:
                 run: vendor/bin/class-leak check src tests --skip-path="Fixture"
 
             -
-                name: 'PHPStan'
+                name: PHPStan
                 run: vendor/bin/phpstan analyze --ansi
 
             -
-                name: 'Coding Standard'
-                run: vendor/bin/ecs check --fix --ansi
+                name: Coding Standard
+                run: vendor/bin/ecs check --fix --no-progress-bar --ansi
 
             -
-                name: 'Tests'
-                run: vendor/bin/phpunit
+                name: Unit Tests
+                run: vendor/bin/phpunit --no-progress --colors
